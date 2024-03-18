@@ -5,11 +5,11 @@ dotenv.config();
 
 const Connection = async () => {
   // const { DB_USERNAME, DB_PASSWORD } = process.env;
-  
+  mongo_URL=`mongodb+srv://pyqplatform:4lvW8IbQPvKRETfB@cluster0.3tzpejq.mongodb.net/curd_ems?retryWrites=true&w=majority&appName=Cluster0`
   
 
   try {
-    await mongoose.connect(process.env.mongo_URL, {
+    await mongoose.connect(mongo_URL, {
       useUnifiedTopology: true,
       useNewUrlParser: true,
     });
