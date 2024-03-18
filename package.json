@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "scripts": {
+    "ems": "cd ems && npm start",
+    "server": "cd ems/server && npm start",
+    "start": "concurrently \"npm run ems\" \"npm run server\""
+  }
+}
