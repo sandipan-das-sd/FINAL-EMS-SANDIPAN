@@ -61,9 +61,16 @@ export default function NewDepartment() {
       } else {
         setShowErrorAlert(true);
         setErrorMessage("Failed to add department.");
+        
       }
     } catch (error) {
-      console.error("Error adding Department Details:", error);
+      // console.error("Error adding Department Details:", error);
+      // console.error("Axios error:", error);
+      // console.error("Error message:", error.message);
+      // console.error("Response details:", error.response);
+      // console.error("Request details:", error.request);
+      // console.error("Request configuration:", error.config);
+      // console.error("Stack trace:", error.stack);
       setShowErrorAlert(true);
       setErrorMessage(`  Error adding Department Details: ${error.message}`);
       setTimeout(() => {

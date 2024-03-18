@@ -9,15 +9,15 @@ const upload = multer({ dest: 'uploads/' });
 const app = express();
 const DeptModel=require('./database/model/Dept')
 // const PortModel=require('./database/model/Port')
-// let corsAllow={
-//     origin:"http://localhost:3000",
-//     methods: "GET,PUT,POST,DELETE,PATCH,HEAD",
-//     credentials:true,
+let corsAllow={
+    origin:"http://localhost:3000",
+    methods: "GET,PUT,POST,DELETE,PATCH,HEAD",
+    credentials:true,
 
 
 
-// }
-app.use(cors());
+}
+app.use(cors(corsAllow));
 
 dotenv.config();
 app.use(express.json());
@@ -173,9 +173,19 @@ app.delete('/deletedept/:id', (req, res) => {
 //port number
 
 app.get('/getPort', (req, res) => {
-    res.json({ port: process.env.PORT || 3001 });
-    // Default to port 3001 if PORT environment variable is not set
-  });
+    // Fetch the port number
+    Promise.resolve(process.env.PORT || 3001)
+        .then(port => {
+            // Send the port number as JSON response
+            res.json({ port });
+        })
+        .catch(error => {
+            // If there's an error, log it and send a default port number
+            console.error('Error fetching port:', error);
+            res.json({ port: 3001 });
+        });
+});
+
 const PORT=process.env.PORT||3001;
 app.listen(PORT, () => {
     console.log(`Server is running on port  ${PORT}`);
