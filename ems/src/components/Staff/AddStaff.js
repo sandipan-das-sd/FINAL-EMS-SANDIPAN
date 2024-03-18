@@ -1,11 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import axios from "axios";
 import Footer from "../Footer";
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min"
 
 export default function AddStaff() {
 const navigate =useHistory()
+
   const [formData, setFormData] = useState({
     user_name: "",
     user_email: "",
@@ -27,7 +28,24 @@ const navigate =useHistory()
     
     index: "",
   });
-  
+  const [port, setPort] = useState(null);
+
+  useEffect(() => {
+    const fetchPort = async () => {
+      try {
+        const response = await axios.get('/getPort');
+        setPort(response.data.port);
+      } catch (error) {
+        console.error('Error fetching port:', error);
+        setPort(3001); // Default to port 3001 if fetching fails
+      }
+    };
+
+    fetchPort();
+  }, []);
+
+
+
   //handelChange is a function where user can type the value and we can get the value of all the input fields
   //on chnage and event are adding for this  here to type
   let [user, setUser] = useState([]);
@@ -42,10 +60,19 @@ const navigate =useHistory()
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!port) {
+      console.error("Port not set");
+      return; // Prevent further execution if port is not set
+    }
+    if(port){
+
+    
+  
     if (validateForm()) {
       try {
         // API call to add staff member
-        const response = await axios.post("http://localhost:3001/addStaff", formData);
+        const response = await axios.post(`http://localhost:${port}/addStaff`, formData);
+  
         if (response.status === 201) {
           // Navigate to the staff list page after successful addition
           alert("Data Successfully added");
@@ -62,6 +89,7 @@ const navigate =useHistory()
           console.error("Error adding staff:", error);
         }
       }
+    }
     }
   
   
@@ -93,25 +121,25 @@ const navigate =useHistory()
     setUser(oldUserdata);
     console.log(formData);
     
-    // To empty the input field after adding/getting the data
-    setFormData({
-      user_name: "",
-      user_email: "",
-      user_sex: "",
-      user_address: "",
-      user_zip: "",
-      user_city: "",
-      user_state: "",
-      user_district: "",
-      user_phone: "",
-      user_birthday: "",
-      user_docx: "",
-      user_department: "",
-      user_workingtype: "",
-      user_doj: "",
-      user_emergencyphneno: "",
-      index: "",
-    });
+    // // To empty the input field after adding/getting the data
+    // setFormData({
+    //   user_name: "",
+    //   user_email: "",
+    //   user_sex: "",
+    //   user_address: "",
+    //   user_zip: "",
+    //   user_city: "",
+    //   user_state: "",
+    //   user_district: "",
+    //   user_phone: "",
+    //   user_birthday: "",
+    //   user_docx: "",
+    //   user_department: "",
+    //   user_workingtype: "",
+    //   user_doj: "",
+    //   user_emergencyphneno: "",
+    //   index: "",
+    // });
   };
   
   const validateForm = () => {

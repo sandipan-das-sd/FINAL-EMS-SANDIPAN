@@ -1,12 +1,27 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useParams, useHistory} from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 
 export default function EditStaff() {
   const { id } = useParams();
   const navigate = useHistory();
+  const [port, setPort] = useState(null);
 
-  // Define formData state
+  useEffect(() => {
+    const fetchPort = async () => {
+      try {
+        const response = await axios.get('/getPort');
+        setPort(response.data.port);
+      } catch (error) {
+        console.error('Error fetching port:', error);
+        setPort(3001); // Default to port 3001 if fetching fails
+      }
+    };
+
+    fetchPort();
+  }, []);
+
+
   const [formData, setFormData] = useState({
     user_name: "",
     user_email: "",
@@ -28,19 +43,13 @@ export default function EditStaff() {
     user_emergency_contact_name: "",
   });
 
-  // Define user state
-  const [user, setUser] = useState([]);
-
   useEffect(() => {
-    axios
-      .get(`http://localhost:3001/editStaff/${id}`)
-      .then((response) => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`http://localhost:${port}/editStaff/${id}`);
         const userData = response.data;
-        console.log(userData);
-        // Format dates
         const formattedBirthday = userData.user_birthday.split("T")[0];
         const formattedDoj = userData.user_doj.split("T")[0];
-
         setFormData({
           user_name: userData.user_name,
           user_email: userData.user_email,
@@ -54,73 +63,43 @@ export default function EditStaff() {
           user_district: userData.user_district,
           user_phone: userData.user_phone,
           user_birthday: formattedBirthday,
-          user_docx: "", // Set to empty string for file input
+          user_docx: "",
           user_department: userData.user_department,
           user_workingtype: userData.user_workingtype,
           user_doj: formattedDoj,
           user_emergencyphneno: userData.user_emergencyphneno,
           user_emergency_contact_name: userData.user_emergency_contact_name,
         });
-      })
-      .catch((err) => console.error(err));
-  }, [id]);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+    if (port && id) {
+      fetchData();
+    }
+  }, [id, port]);
 
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
-
-    // For file inputs
-    if (type === "file") {
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: files[0], // Update formData with the selected file
-      }));
-    } else {
-      // For other input types
-      setFormData((prevData) => ({
-        ...prevData,
-        [name]: value,
-      }));
-    }
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: type === "file" ? files[0] : value,
+    }));
   };
-  //update the staff forms
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // API call to update staff member
-    await axios
-      .put(`http://localhost:3001/updateStaffs/${id}`, formData)
-      .then((res) => {
-        console.log(res);
-        // Navigate to the staff list page after successful addition
-        alert("Data Successfully Updated");
-        navigate.push("/staffList");
-      })
-      .catch((err) => console.log(err));
-
-    // Handle form submission
-    let currentUserFormData = {
-      user_name: formData.user_name,
-      user_email: formData.user_email,
-      user_age: formData.user_age,
-      user_sex: formData.user_sex,
-      user_jobtitle: formData.user_jobtitle,
-      user_address: formData.user_address,
-      user_zip: formData.user_zip,
-      user_city: formData.user_city,
-      user_state: formData.user_state,
-      user_district: formData.user_district,
-      user_phone: formData.user_phone,
-      user_birthday: formData.user_birthday,
-      user_docx: formData.user_docx,
-      user_department: formData.user_department,
-      user_workingtype: formData.user_workingtype,
-      user_doj: formData.user_doj,
-      user_emergencyphneno: formData.user_emergencyphneno,
-      user_emergency_contact_name: formData.user_emergency_contact_name,
-      index: formData.index,
-    };
-    let oldUserdata = [...user, currentUserFormData];
-    setUser(oldUserdata);
-    console.log(formData);
+    if (!port) {
+      console.error("Port not set");
+      return;
+    }
+    try {
+      await axios.put(`http://localhost:${port}/updateStaffs/${id}`, formData);
+      alert("Data Successfully Updated");
+      navigate.push("/staffList");
+    } catch (error) {
+      console.error('Error updating staff:', error);
+    }
   };
 
   return (

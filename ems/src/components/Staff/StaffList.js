@@ -7,6 +7,21 @@ export default function StaffList() {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [port, setPort] = useState(null);
+
+  useEffect(() => {
+    const fetchPort = async () => {
+      try {
+        const response = await axios.get('/getPort');
+        setPort(response.data.port);
+      } catch (error) {
+        console.error('Error fetching port:', error);
+        setPort(3001); // Default to port 3001 if fetching fails
+      }
+    };
+
+    fetchPort();
+  }, []);
 
   // Function to format ISO date to MM/DD/YYYY format
   const formatDate = (isoDate) => {
@@ -20,29 +35,32 @@ export default function StaffList() {
   const navigate = useHistory();
   
   useEffect(() => {
+    if (!port) return; // Do not proceed if port is not fetched yet
+  
     axios
-      .get("http://localhost:3001/staffList")
+      .get(`http://localhost:${port}/staffList`)
       .then((result) => {
         setUsers(result.data);
         setLoading(false);
         console.log(result.data);
-        // result.data.map((user, index) => {
-        //   console.log(`${index}. ${user._id}`);
-        // });
-        
-
       })
       .catch((err) => setError(err.message)); // Handle errors
-  }, []);
+  }, [port]);
+  
 
   const handelDelete = (id) => {
     // Use a custom confirmation dialog
     const confirmed = window.confirm("Are you sure you want to delete?");
-
+  
     // If confirmed, proceed with deletion
     if (confirmed) {
+      if (!port) {
+        console.error("Port not set");
+        return;
+      }
+  
       axios
-        .delete("http://localhost:3001/deleteStaff/" + id)
+        .delete(`http://localhost:${port}/deleteStaff/` + id)
         .then((res) => {
           console.log(res);
           alert("Record Deleted successfully");
@@ -51,7 +69,7 @@ export default function StaffList() {
         .catch((error) => console.log(error));
     }
   };
-
+  
   return (
     <div className="container-fluid">
       <Container className="mt-10">
@@ -175,6 +193,7 @@ export default function StaffList() {
                         <path
                           d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"
                           onClick={() => navigate.push(`/manageStaff/${user._id}`)}
+                          cursor = "pointer"
                         />
                       </svg>
                     </td>

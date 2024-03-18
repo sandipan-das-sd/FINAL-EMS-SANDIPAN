@@ -1,5 +1,5 @@
 const express = require('express');
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const Connection = require('./database/connection/db');
@@ -8,6 +8,7 @@ const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 const app = express();
 const DeptModel=require('./database/model/Dept')
+// const PortModel=require('./database/model/Port')
 // let corsAllow={
 //     origin:"http://localhost:3000",
 //     methods: "GET,PUT,POST,DELETE,PATCH,HEAD",
@@ -169,7 +170,14 @@ app.delete('/deletedept/:id', (req, res) => {
         .then(dept => res.json(dept))
         .catch(err => res.status(500).json({ error: err.message }));
 });
+//port number
 
-app.listen(3001, () => {
-    console.log('Server is running on port 3001');
+app.get('/getPort', (req, res) => {
+    res.json({ port: process.env.PORT || 3001 });
+    // Default to port 3001 if PORT environment variable is not set
+  });
+const PORT=process.env.PORT||3001;
+app.listen(PORT, () => {
+    console.log(`Server is running on port  ${PORT}`);
+    console.log(process.env.PORT)
 });

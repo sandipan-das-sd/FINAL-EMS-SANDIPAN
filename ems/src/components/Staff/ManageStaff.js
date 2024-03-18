@@ -7,6 +7,7 @@ export default function ManageStaff() {
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [port, setPort] = useState(null);
 
   // Function to format ISO date to MM/DD/YYYY format
   const formatDate = (isoDate) => {
@@ -18,8 +19,24 @@ export default function ManageStaff() {
   };
 
   useEffect(() => {
+    const fetchPort = async () => {
+      try {
+        const response = await axios.get('/getPort');
+        setPort(response.data.port);
+      } catch (error) {
+        console.error('Error fetching port:', error);
+        setPort(3001); // Default to port 3001 if fetching fails
+      }
+    };
+
+    fetchPort();
+  }, []);
+  useEffect(() => {
+    if (!port) 
+    return; 
+
     axios
-      .get(`http://localhost:3001/editStaff/${id}`)
+      .get(`http://localhost:${port}/editStaff/${id}`)
       .then((response) => {
         setUser(response.data); // Assuming response.data contains the user details
         setLoading(false);
@@ -28,7 +45,7 @@ export default function ManageStaff() {
         setError(error.message);
         setLoading(false);
       });
-  }, [id]);
+  }, [id, port]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -37,6 +54,9 @@ export default function ManageStaff() {
   if (error) {
     return <div>Error: {error}</div>;
   }
+
+  // Render user details here
+
 
   return (
     <div

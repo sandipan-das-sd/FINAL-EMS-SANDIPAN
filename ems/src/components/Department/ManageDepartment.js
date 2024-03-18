@@ -4,8 +4,8 @@ import { useHistory } from 'react-router-dom';
 
 export default function ManageDepartment() {
   const tableStyle = {
-    background: 'linear-gradient(135deg, #2980b9, #6dd5fa)', // Gradient background
-    color: '#fff', // Text color
+    background: 'linear-gradient(135deg, #2980b9, #6dd5fa)',
+    color: '#fff',
   };
   const navigate = useHistory();
 
@@ -20,39 +20,64 @@ export default function ManageDepartment() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState([]);
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // Maintain authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [port, setPort] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchPort = async () => {
       try {
-        const response = await axios.get('http://localhost:3001/manageDepartment');
-        setUser(response.data);
-        setIsAuthenticated(true); // Set isAuthenticated to true when data is fetched successfully
+        const response = await axios.get('/getPort');
+        setPort(response.data.port);
       } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching port:', error);
+        setPort(3001); // Default to port 3001 if fetching fails
       }
     };
 
-    fetchData();
+    fetchPort();
   }, []);
 
+  useEffect(() => {
+    if (port) {
+      const fetchData = async () => {
+        try {
+          const response = await axios.get(`http://localhost:${port}/manageDepartment`);
+          setUser(response.data);
+          setIsAuthenticated(true); // Set isAuthenticated to true when data is fetched successfully
+        } catch (error) {
+          setError(error.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchData();
+    }
+  }, [port]);
+
   const handleDelete = (id) => {
+   
     const confirmed = window.confirm("Are you sure you want to delete?");
 
     if (confirmed) {
+      if (!port) {
+        console.error("Port not set");
+        return;
+      }
       
-      axios.delete('http://localhost:3001/deletedept/' + id)
+      axios
+      .delete(`http://localhost:${port}/deletedept/` + id)
         .then(res => {
           console.log(res);
           alert("Record Deleted successfully");
           //  window.location.reload();
-         
+          // setUser(prevUsers => prevUsers.filter(item => item.id !== id));
         })
         .catch(error => console.log(error));
     }
   };
+  
+
 
   return (
     <div className='container-fluid'>

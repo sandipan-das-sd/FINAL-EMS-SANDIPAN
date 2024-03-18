@@ -1,17 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
-
+import { useHistory } from "react-router-dom";
 
 export default function NewDepartment() {
   const [formData, setFormData] = useState({
     deptName: "",
     deptID: "",
   });
-  const navigate=useHistory();
+  const navigate = useHistory();
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [port, setPort] = useState(null);
+
+  useEffect(() => {
+    const fetchPort = async () => {
+      try {
+        const response = await axios.get('/getPort');
+        setPort(response.data.port);
+      } catch (error) {
+        console.error('Error fetching port:', error);
+        setPort(3001); // Default to port 3001 if fetching fails
+      }
+    };
+
+    fetchPort();
+  }, []); // Empty dependency array to fetch port only once
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -23,6 +37,9 @@ export default function NewDepartment() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if(!port){
+      console.error("Port is not set");
+    }
     if (!formData.deptName || !formData.deptID) {
       alert("Please enter both department name and department ID");
       if (!formData.deptName) {
@@ -32,8 +49,9 @@ export default function NewDepartment() {
       }
       return; // Prevent further execution of the function
     }
+
     try {
-      const res = await axios.post("http://localhost:3001/adddept", formData);
+      const res = await axios.post(`http://localhost:${port}/adddept`, formData);
       if (res.status === 201) {
         setShowSuccessAlert(true);
         setShowErrorAlert(false); // Reset the error alert state
